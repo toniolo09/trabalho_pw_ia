@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Compras</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/estilo.css">
+</head>
+
+<body class="bg-body text-body vh-100 overflow-hidden">
+
+    <div class="container h-100 d-flex flex-column py-3">
+        <div class="row justify-content-center h-100">
+            <div class="col-md-6 h-100 d-flex flex-column">
+
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body p-4" style="display: flex; flex-direction: column; overflow: hidden;">
+
+                        <h2 class="card-title text-center mb-4 text-primary">
+                            <i class="fas fa-shopping-cart me-2"></i> Minha Lista de Compras
+                        </h2>
+
+                        {% if erro %}
+                        <div class="alert alert-danger py-2 small">{{ erro }}</div>
+                        {% endif %}
+
+                        <form method="POST" class="mb-4" id="formCompra">
+                            <div class="input-group">
+                                {% if editando %}
+                                <input type="hidden" name="update_id" value="{{ editando.id }}">
+                                <input type="text" name="item" id="itemInput" class="form-control border-warning"
+                                    value="{{ editando.item }}" autofocus>
+                                <button class="btn btn-warning text-white" type="submit">Salvar</button>
+                                <a href="index.php" class="btn btn-outline-secondary">✕</a>
+                                {% else %}
+                                <input type="text" name="item" id="itemInput" autocomplete="off" class="form-control"
+                                    placeholder="Adicionar novo item...">
+                                <button class="btn btn-primary" type="submit">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                            <div id="jsFeedback" class="text-danger small mt-1 d-none">Digite pelo menos 3 caracteres.
+                            </div>
+                        </form>
+                        {% if lista|length > 0 %}
+                        <div style="overflow-y: auto; flex-grow: 1; padding-right: 5px;">
+                        {% else %}
+                        <div class="flex-grow-1 d-flex align-items-center justify-content-center">
+                        {% endif %}
+                            <ul class="list-group list-group-flush">
+                                {% for item in lista %}
+                                <li
+                                    class="list-group-item d-flex justify-content-between align-items-center px-2 py-3 item-hover">
+                                    <div class="text-truncate" style="max-width: 70%;">
+                                        <h6 class="mb-0">{{ item.nome }}</h6>
+                                        <small class="text-muted" style="font-size: 0.75rem;">{{ item.data }}</small>
+                                    </div>
+                                    <div class="btn-group shadow-sm d-flex gap-2">
+                                        <a href="index.php?action=edit&id={{ item.id }}"
+                                            class="btn btn-sm btn-outline-warning">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="index.php?action=delete&id={{ item.id }}"
+                                            class="btn btn-sm btn-outline-danger"
+                                            onclick="return confirm('Deseja excluir?')">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </li>
+                                {% else %}
+                                <div class="flex-grow-1 d-flex align-items-center justify-content-center text-muted">
+                                    <p class="mb-0">Sua lista está vazia.</p>
+                                </div>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="text-center text-primary gap-2 mt-4"
+                            style="display: flex; justify-content: center;">
+                            <button id="themeToggle" class="btn btn-primary">Alternar tema</button>
+                            <br>
+
+                            <button id="themeToggle" class="btn btn-danger">
+                                <a href="index.php?action=clear_all" class="text-decoration-none text-white"
+                                    onclick="return confirm('Tem certeza que deseja apagar todos os itens?')">
+                                    <i class="fas fa-trash-sweep"></i> Esvaziar Lista
+                                </a>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Validação no Lado do Cliente (JavaScript Vanilla - Requisito Obrigatório)
+        document.getElementById('formCompra').addEventListener('submit', function (event) {
+            const input = document.getElementById('itemInput');
+            const feedback = document.getElementById('jsFeedback');
+
+            if (input.value.trim().length < 3) {
+                event.preventDefault(); // Cancela o envio
+                input.classList.add('is-invalid');
+                feedback.classList.remove('d-none');
+            }
+        });
+
+        // Remover erro ao digitar
+        document.getElementById('itemInput').addEventListener('input', function () {
+            this.classList.remove('is-invalid');
+            document.getElementById('jsFeedback').classList.add('d-none');
+        });
+    </script>
+
+    <script>
+        const doc = document.documentElement;
+        const savedTheme = localStorage.getItem('theme');
+
+        if (savedTheme) {
+            doc.setAttribute('data-bs-theme', savedTheme);
+        }
+
+        document.getElementById('themeToggle').addEventListener('click', () => {
+            const current = doc.getAttribute('data-bs-theme');
+            const newTheme = current === 'dark' ? 'light' : 'dark';
+
+            doc.setAttribute('data-bs-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
