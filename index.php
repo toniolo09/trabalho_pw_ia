@@ -36,8 +36,8 @@ if ($action === 'clear_all') {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $item = trim($_POST['item'] ?? '');
 
-    if (empty($item) || strlen($item) < 3) {
-        $msg_erro = "Erro no Servidor: O item deve ter pelo menos 3 caracteres.";
+    if (empty($item) || strlen($item) < 1) {
+        $msg_erro = "Erro no Servidor: O item deve ter pelo menos 1 caractere.";
     } else {
         if (isset($_POST['update_id'])) {
             $stmt = $db->prepare("UPDATE compras SET item = ? WHERE id = ?");

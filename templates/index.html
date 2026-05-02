@@ -43,7 +43,7 @@
                                 </button>
                                 {% endif %}
                             </div>
-                            <div id="jsFeedback" class="text-danger small mt-1 d-none">Digite pelo menos 3 caracteres.
+                            <div id="jsFeedback" class="text-danger small mt-1 d-none">Digite pelo menos 1 caracteres.
                             </div>
                         </form>
                         {% if lista|length > 0 %}
@@ -103,7 +103,7 @@
             const input = document.getElementById('itemInput');
             const feedback = document.getElementById('jsFeedback');
 
-            if (input.value.trim().length < 3) {
+            if (input.value.trim().length < 1) {
                 event.preventDefault(); // Cancela o envio
                 input.classList.add('is-invalid');
                 feedback.classList.remove('d-none');
