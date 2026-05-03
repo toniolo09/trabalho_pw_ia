@@ -11,7 +11,15 @@ Carbon::setLocale('pt_BR');
 // Persistência: Banco de Dados SQLite (Requisito Obrigatório)
 $db = new PDO('sqlite:database.db');
 $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-$db->exec("CREATE TABLE IF NOT EXISTS compras (id INTEGER PRIMARY KEY AUTOINCREMENT, item TEXT, criado_em DATETIME DEFAULT CURRENT_TIMESTAMP)");
+
+// Cria a tabela se não existir
+$db->exec("CREATE TABLE IF NOT EXISTS compras (id INTEGER PRIMARY KEY AUTOINCREMENT, item TEXT, quantidade INTEGER DEFAULT 1, criado_em DATETIME DEFAULT CURRENT_TIMESTAMP)");
+
+// Migração: Verifica se a coluna 'quantidade' existe (para casos onde a tabela foi criada antes da atualização)
+$colunas = $db->query("PRAGMA table_info(compras)")->fetchAll(PDO::FETCH_COLUMN, 1);
+if (!in_array('quantidade', $colunas)) {
+    $db->exec("ALTER TABLE compras ADD COLUMN quantidade INTEGER DEFAULT 1");
+}
 
 $action = $_GET['action'] ?? null;
 $id = $_GET['id'] ?? null;
@@ -25,6 +33,15 @@ if ($action === 'delete' && $id) {
     exit;
 }
 
+// CRUD: UPDATE QUANTITY (via botões +/- na lista)
+if ($action === 'update_qty' && $id) {
+    $change = (int)($_GET['change'] ?? 0);
+    $stmt = $db->prepare("UPDATE compras SET quantidade = MAX(1, quantidade + ?) WHERE id = ?");
+    $stmt->execute([$change, $id]);
+    header("Location: index.php");
+    exit;
+}
+
 // CRUD: DELETE ALL (Esvaziar Lista)
 if ($action === 'clear_all') {
     $db->exec("DELETE FROM compras");
@@ -34,17 +51,29 @@ if ($action === 'clear_all') {
 
 // CRUD: CREATE e UPDATE com Validação no Servidor (Requisito Obrigatório)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Caso seja apenas atualização rápida de quantidade via input na lista
+    if (isset($_POST['update_qty_id'])) {
+        $qty = (int)$_POST['quantidade'];
+        if ($qty < 1) $qty = 1;
+        $stmt = $db->prepare("UPDATE compras SET quantidade = ? WHERE id = ?");
+        $stmt->execute([$qty, $_POST['update_qty_id']]);
+        header("Location: index.php");
+        exit;
+    }
+
     $item = trim($_POST['item'] ?? '');
+    $quantidade = (int)($_POST['quantidade'] ?? 1);
+    if ($quantidade < 1) $quantidade = 1;
 
     if (empty($item) || strlen($item) < 1) {
         $msg_erro = "Erro no Servidor: O item deve ter pelo menos 1 caractere.";
     } else {
         if (isset($_POST['update_id'])) {
-            $stmt = $db->prepare("UPDATE compras SET item = ? WHERE id = ?");
-            $stmt->execute([htmlspecialchars($item), $_POST['update_id']]);
+            $stmt = $db->prepare("UPDATE compras SET item = ?, quantidade = ? WHERE id = ?");
+            $stmt->execute([htmlspecialchars($item), $quantidade, $_POST['update_id']]);
         } else {
-            $stmt = $db->prepare("INSERT INTO compras (item) VALUES (?)");
-            $stmt->execute([htmlspecialchars($item)]);
+            $stmt = $db->prepare("INSERT INTO compras (item, quantidade) VALUES (?, ?)");
+            $stmt->execute([htmlspecialchars($item), $quantidade]);
         }
         header("Location: index.php");
         exit;
@@ -60,6 +89,7 @@ foreach ($itensRaw as $row) {
     $itensFormatados[] = [
         'id' => $row['id'],
         'nome' => $row['item'],
+        'quantidade' => $row['quantidade'] ?? 1,
         'data' => Carbon::parse($row['criado_em'], 'UTC')->setTimezone('America/Sao_Paulo')->diffForHumans()
     ];
 }
