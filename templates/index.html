@@ -40,7 +40,7 @@
                             </div>
                             <div class="input-group">
                                 <span class="input-group-text small bg-primary text-white">Quantidade</span>
-                                <input type="number" name="quantidade" class="form-control txt-center"
+                                <input type="number" name="quantidade" class="form-control text-center"
                                     value="{{ editando.quantidade|default(1) }}" min="1">
                                 {% if editando %}
                                 <button class="btn btn-warning text-white" type="submit">Salvar</button>
@@ -57,7 +57,7 @@
 
                         <div id="info" class="d-flex justify-content-between align-items-center fw-bold text-primary px-2">
                             <span>Produto(s)</span>
-                            <span class="ps-2">Quantidade</span>
+                            <span class="ps-4">Quantidade</span>
                             <span class="pe-3">Ações</span>
                         </div>
 
@@ -70,7 +70,7 @@
                                     {% for item in lista %}
                                     <li
                                         class="list-group-item d-flex justify-content-center align-items-center px-2 py-3 item-hover">
-                                        <div class="text-truncate" style="max-width: 150px;">
+                                        <div class="text-truncate" style="width: 100px;">
                                             <h6 class="mb-0 pe-5">{{ item.nome }}</h6>
                                             <small class="text-muted" style="font-size: 0.75rem;">{{ item.data
                                                 }}</small>
@@ -82,8 +82,8 @@
                                             <a href="index.php?action=update_qty&id={{ item.id }}&change=-1"
                                                 class="btn btn-md py-1 bg-primary text-white">-</a>
                                             <input type="number" name="quantidade" value="{{ item.quantidade }}"
-                                                class="form-control form-control-sm text-center p-0"
-                                                style="width: 40px;" onchange="this.form.submit()">
+                                                class="form-control form-control-sm text-center"
+                                                style="width: 80px;" onchange="this.form.submit()">
                                             <a href="index.php?action=update_qty&id={{ item.id }}&change=1"
                                                 class="btn btn-md py-1 px-2 bg-primary text-white">+</a>
                                         </form>
